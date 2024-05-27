@@ -39,7 +39,6 @@ def adicionar_chamado(descricao, data_abertura, prioridade):
     
     conn.commit()
     conn.close()
-    atualizar_tabela()
 
 def fechar_chamado(id_chamado):
     conn = sqlite3.connect('chamados.db')
@@ -59,7 +58,6 @@ def fechar_chamado(id_chamado):
     
     conn.commit()
     conn.close()
-    atualizar_tabela()
 
 def atualizar_status(id_chamado, novo_status):
     conn = sqlite3.connect('chamados.db')
@@ -73,7 +71,6 @@ def atualizar_status(id_chamado, novo_status):
     
     conn.commit()
     conn.close()
-    atualizar_tabela()
 
 def remover_chamado(id_chamado):
     conn = sqlite3.connect('chamados.db')
@@ -83,7 +80,6 @@ def remover_chamado(id_chamado):
     
     conn.commit()
     conn.close()
-    atualizar_tabela()
 
 def calcular_metricas():
     conn = sqlite3.connect('chamados.db')
@@ -136,7 +132,7 @@ class ChamadosApp:
         self.prioridade_entry = ttk.Entry(self.frame_add, width=20)
         self.prioridade_entry.grid(row=1, column=1, sticky="W")
         
-        self.adicionar_button = ttk.Button(self.frame_add, text="Adicionar Chamado", command=self.adicionar_chamado)
+        self.adicionar_button = ttk.Button(self.frame_add, text="Adicionar Chamado", command=self.adicionar_chamado_action)
         self.adicionar_button.grid(row=2, columnspan=2, pady=10)
         
         # Frame para atualizar/remover chamados
@@ -153,10 +149,10 @@ class ChamadosApp:
         self.status_entry = ttk.Entry(self.frame_manage, width=20)
         self.status_entry.grid(row=1, column=1, sticky="W")
         
-        self.atualizar_button = ttk.Button(self.frame_manage, text="Atualizar Status", command=self.atualizar_status)
+        self.atualizar_button = ttk.Button(self.frame_manage, text="Atualizar Status", command=self.atualizar_status_action)
         self.atualizar_button.grid(row=2, columnspan=2, pady=5)
         
-        self.remover_button = ttk.Button(self.frame_manage, text="Remover Chamado", command=self.remover_chamado)
+        self.remover_button = ttk.Button(self.frame_manage, text="Remover Chamado", command=self.remover_chamado_action)
         self.remover_button.grid(row=3, columnspan=2, pady=5)
         
         # Frame para listar chamados
@@ -179,7 +175,7 @@ class ChamadosApp:
         self.metricas_button = ttk.Button(root, text="Visualizar Métricas", command=self.mostrar_metricas)
         self.metricas_button.pack(padx=10, pady=10)
 
-    def adicionar_chamado(self):
+    def adicionar_chamado_action(self):
         descricao = self.descricao_entry.get()
         prioridade = self.prioridade_entry.get()
         data_abertura = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -187,43 +183,43 @@ class ChamadosApp:
         if descricao and prioridade:
             adicionar_chamado(descricao, data_abertura, prioridade)
             messagebox.showinfo("Sucesso", "Chamado adicionado com sucesso!")
+            self.atualizar_tabela()
         else:
             messagebox.showwarning("Atenção", "Preencha todos os campos.")
         
         self.descricao_entry.delete(0, tk.END)
         self.prioridade_entry.delete(0, tk.END)
-        self.atualizar_tabela()
 
-    def atualizar_status(self):
+    def atualizar_status_action(self):
         id_chamado = self.id_entry.get()
         novo_status = self.status_entry.get()
         
         if id_chamado and novo_status:
             atualizar_status(id_chamado, novo_status)
             messagebox.showinfo("Sucesso", "Status do chamado atualizado com sucesso!")
+            self.atualizar_tabela()
         else:
             messagebox.showwarning("Atenção", "Preencha todos os campos.")
         
         self.id_entry.delete(0, tk.END)
         self.status_entry.delete(0, tk.END)
-        self.atualizar_tabela()
 
-    def remover_chamado(self):
+    def remover_chamado_action(self):
         id_chamado = self.id_entry.get()
         
         if id_chamado:
             remover_chamado(id_chamado)
             messagebox.showinfo("Sucesso", "Chamado removido com sucesso!")
+            self.atualizar_tabela()
         else:
             messagebox.showwarning("Atenção", "Preencha o ID do chamado.")
         
         self.id_entry.delete(0, tk.END)
-        self.atualizar_tabela()
 
     def mostrar_metricas(self):
         metricas = calcular_metricas()
         messagebox.showinfo("Métricas",
-                            f"Tempo médio de resolução: {metricas[0]::2f} horas\n"
+                            f"Tempo médio de resolução: {metricas[0]:.2f} horas\n"
                             f"Número de chamados fechados: {metricas[1]}\n"
                             f"Número de chamados abertos: {metricas[2]}")
         self.visualizar_metricas()
